@@ -139,7 +139,7 @@ If you don't require the full combined weight of the enrichment pipeline, Domelu
 
 ## 🚀 Getting Your API Key
 
-1. Navigate to the **[RapidAPI Hub Gateway](https://domelu.io)**.
+1. Navigate to the **[RapidAPI Hub Gateway](https://rapidapi.com/adipostella/api/domelu1)**.
 2. Sign up or log into your developer dashboard.
 3. Subscribe to the **Domelu** service to generate your unique token layer `X-RapidAPI-Key`.
 4. Replace `YOUR_RAPIDAPI_KEY_HERE` in your code snippet and you're ready to scale!
