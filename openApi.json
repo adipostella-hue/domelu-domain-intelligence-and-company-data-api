@@ -1,0 +1,494 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Email Domain Retrieval & Intelligence API",
+    "description": "Enterprise-grade Email Domain Retrieval & Intelligence API. Provides multi-layer domain analysis including DNS/WHOIS registration, MX records, Web Scraping (metadata, social links, About Us), and Enriched DB intelligence (company size, HQ, employee schema, verified emails, executive lookups).",
+    "termsOfService": "https://domelu.io/terms",
+    "contact": {
+      "name": "API Support",
+      "url": "https://domelu.io/support",
+      "email": "support@domelu.io"
+    },
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://email-domain-retrieval-intelligence.p.rapidapi.com/v1",
+      "description": "RapidAPI Hub Gateway"
+    },
+    {
+      "url": "https://api.domelu.io/v1",
+      "description": "Direct Production Server"
+    }
+  ],
+  "security": [
+    {
+      "RapidAPIKey": [],
+      "RapidAPIHost": []
+    },
+    {
+      "ApiKeyAuth": []
+    }
+  ],
+  "paths": {
+    "/domain/enrich": {
+      "get": {
+        "summary": "Full Domain Intelligence Lookup",
+        "description": "Executes all three intelligence layers (DNS/WHOIS, Web Scraping, Enriched DB) and delivers a segmented payload with Company Profile, Social Proof, and Employee Intelligence.",
+        "operationId": "getEnrichedDomainIntelligence",
+        "parameters": [
+          {
+            "name": "domain",
+            "in": "query",
+            "description": "Target domain name to retrieve intelligence for (e.g., stripe.com, github.com).",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "stripe.com"
+            }
+          },
+          {
+            "name": "include_layers",
+            "in": "query",
+            "description": "Comma-separated list of layers to execute. Defaults to all layers.",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["dns_whois", "web_scraping", "enriched_db"]
+              },
+              "default": ["dns_whois", "web_scraping", "enriched_db"]
+            }
+          },
+          {
+            "name": "verify_emails",
+            "in": "query",
+            "description": "Whether to perform real-time MX & SMTP validation on discovered emails.",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful domain intelligence retrieval",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DomainIntelligenceResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid domain parameter or request format",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Missing or invalid RapidAPI Key / API Key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/domain/dns-whois": {
+      "get": {
+        "summary": "DNS & WHOIS Layer Query",
+        "description": "Queries domain registration details, registrar name, creation/expiry dates, name servers, MX records, SPF, and DMARC configurations.",
+        "operationId": "getDnsWhoisIntelligence",
+        "parameters": [
+          {
+            "name": "domain",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "stripe.com"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful DNS & WHOIS data response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DnsWhoisInfo"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/domain/scrape": {
+      "get": {
+        "summary": "Web Scraping Layer Query",
+        "description": "Extracts meta tags, OpenGraph data, website title, description, favicon, About Us summary, LinkedIn links, and social channel profiles.",
+        "operationId": "getScrapedDomainIntelligence",
+        "parameters": [
+          {
+            "name": "domain",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "stripe.com"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful web scraping data response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SocialProof"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/domain/employees": {
+      "get": {
+        "summary": "Enriched Employee & Executive Intelligence Query",
+        "description": "Retrieves employee headcount breakdown, email format patterns, verified email lists with SMTP verification, and cached executive profiles.",
+        "operationId": "getEmployeeIntelligence",
+        "parameters": [
+          {
+            "name": "domain",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "stripe.com"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful employee intelligence data response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmployeeIntelligence"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "RapidAPIKey": {
+        "type": "apiKey",
+        "name": "X-RapidAPI-Key",
+        "in": "header",
+        "description": "Your RapidAPI Subscription Key"
+      },
+      "RapidAPIHost": {
+        "type": "apiKey",
+        "name": "X-RapidAPI-Host",
+        "in": "header",
+        "description": "RapidAPI Host Header (e.g., email-domain-retrieval-intelligence.p.rapidapi.com)"
+      },
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "name": "X-API-Key",
+        "in": "header",
+        "description": "Direct API Key for Standalone Server Access"
+      }
+    },
+    "schemas": {
+      "DomainIntelligenceResponse": {
+        "type": "object",
+        "required": ["status", "code", "request_id", "timestamp", "execution_time_ms", "layers_executed", "data"],
+        "properties": {
+          "status": { "type": "string", "example": "success" },
+          "code": { "type": "integer", "example": 200 },
+          "request_id": { "type": "string", "example": "req_8f92a10c-4b7e-432d-91a5-e6f7a8b9c0d1" },
+          "timestamp": { "type": "string", "format": "date-time", "example": "2025-02-18T12:34:56.789Z" },
+          "execution_time_ms": { "type": "integer", "example": 342 },
+          "layers_executed": { "$ref": "#/components/schemas/LayersExecuted" },
+          "data": { "$ref": "#/components/schemas/SegmentedDomainData" }
+        }
+      },
+      "LayersExecuted": {
+        "type": "object",
+        "properties": {
+          "dns_whois_layer": { "$ref": "#/components/schemas/LayerStatus" },
+          "web_scraping_layer": { "$ref": "#/components/schemas/LayerStatus" },
+          "enriched_data_db_layer": { "$ref": "#/components/schemas/LayerStatus" }
+        }
+      },
+      "LayerStatus": {
+        "type": "object",
+        "properties": {
+          "status": { "type": "string", "example": "COMPLETED" },
+          "latency_ms": { "type": "integer", "example": 45 },
+          "cache_hit": { "type": "boolean", "example": true },
+          "last_sync_timestamp": { "type": "string", "format": "date-time", "nullable": true }
+        }
+      },
+      "SegmentedDomainData": {
+        "type": "object",
+        "required": ["company_profile", "social_proof", "employee_intelligence"],
+        "properties": {
+          "company_profile": { "$ref": "#/components/schemas/CompanyProfile" },
+          "social_proof": { "$ref": "#/components/schemas/SocialProof" },
+          "employee_intelligence": { "$ref": "#/components/schemas/EmployeeIntelligence" }
+        }
+      },
+      "CompanyProfile": {
+        "type": "object",
+        "required": ["domain", "company_name", "industry", "company_size", "hq", "dns_whois_info"],
+        "properties": {
+          "domain": { "type": "string", "example": "stripe.com" },
+          "company_name": { "type": "string", "example": "Stripe, Inc." },
+          "legal_name": { "type": "string", "nullable": true, "example": "Stripe, Inc." },
+          "founding_year": { "type": "integer", "example": 2010 },
+          "industry": { "type": "string", "example": "Financial Services & Fintech" },
+          "description": { "type": "string", "example": "Stripe is a financial infrastructure platform for businesses." },
+          "company_size": { "$ref": "#/components/schemas/CompanySize" },
+          "hq": { "$ref": "#/components/schemas/Headquarters" },
+          "dns_whois_info": { "$ref": "#/components/schemas/DnsWhoisInfo" },
+          "technology_stack": { "$ref": "#/components/schemas/TechnologyStack" }
+        }
+      },
+      "CompanySize": {
+        "type": "object",
+        "properties": {
+          "range": { "type": "string", "example": "5,000 - 10,000" },
+          "estimated_exact": { "type": "integer", "example": 8000 },
+          "category": { "type": "string", "example": "Enterprise" },
+          "employee_growth_rate_yoy_pct": { "type": "number", "format": "float", "example": 12.5 }
+        }
+      },
+      "Headquarters": {
+        "type": "object",
+        "properties": {
+          "address_line_1": { "type": "string", "example": "354 Oyster Point Blvd" },
+          "address_line_2": { "type": "string", "nullable": true },
+          "city": { "type": "string", "example": "South San Francisco" },
+          "state_province": { "type": "string", "example": "CA" },
+          "postal_code": { "type": "string", "example": "94080" },
+          "country": { "type": "string", "example": "United States" },
+          "country_code": { "type": "string", "example": "US" },
+          "location_coordinates": {
+            "type": "object",
+            "properties": {
+              "latitude": { "type": "number", "format": "double", "example": 37.6547 },
+              "longitude": { "type": "number", "format": "double", "example": -122.3831 }
+            }
+          }
+        }
+      },
+      "DnsWhoisInfo": {
+        "type": "object",
+        "properties": {
+          "domain_registration": {
+            "type": "object",
+            "properties": {
+              "registrar": { "type": "string", "example": "MarkMonitor Inc." },
+              "created_date": { "type": "string", "format": "date-time", "example": "1995-09-12T04:00:00Z" },
+              "expiry_date": { "type": "string", "format": "date-time", "example": "2030-09-11T04:00:00Z" },
+              "domain_age_years": { "type": "integer", "example": 29 }
+            }
+          },
+          "mx_records": { "$ref": "#/components/schemas/MxRecordsInfo" }
+        }
+      },
+      "MxRecordsInfo": {
+        "type": "object",
+        "properties": {
+          "has_mx_records": { "type": "boolean", "example": true },
+          "email_provider": { "type": "string", "example": "Google Workspace" },
+          "records": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "host": { "type": "string", "example": "aspmx.l.google.com" },
+                "priority": { "type": "integer", "example": 1 },
+                "ip_address": { "type": "string", "example": "142.250.153.27" }
+              }
+            }
+          },
+          "security": {
+            "type": "object",
+            "properties": {
+              "spf_valid": { "type": "boolean", "example": true },
+              "spf_record": { "type": "string", "example": "v=spf1 include:_spf.google.com ~all" },
+              "dmarc_valid": { "type": "boolean", "example": true },
+              "dmarc_record": { "type": "string", "example": "v=DMARC1; p=reject;" }
+            }
+          }
+        }
+      },
+      "TechnologyStack": {
+        "type": "object",
+        "properties": {
+          "hosting_provider": { "type": "string", "example": "Amazon Web Services (AWS)" },
+          "content_delivery_network": { "type": "string", "example": "Cloudflare" },
+          "frameworks": { "type": "array", "items": { "type": "string" }, "example": ["React", "Ruby on Rails"] }
+        }
+      },
+      "SocialProof": {
+        "type": "object",
+        "properties": {
+          "about_us": {
+            "type": "object",
+            "properties": {
+              "page_url": { "type": "string", "example": "https://stripe.com/about" },
+              "headline": { "type": "string", "example": "Financial infrastructure for the internet" },
+              "summary": { "type": "string", "example": "Stripe builds economic infrastructure for the internet." }
+            }
+          },
+          "linkedin": {
+            "type": "object",
+            "properties": {
+              "company_page_url": { "type": "string", "example": "https://www.linkedin.com/company/stripe" },
+              "linkedin_id": { "type": "string", "example": "1647137" },
+              "follower_count": { "type": "integer", "example": 850000 },
+              "verified": { "type": "boolean", "example": true }
+            }
+          },
+          "social_links": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "platform": { "type": "string", "example": "Twitter" },
+                "handle": { "type": "string", "example": "@stripe" },
+                "url": { "type": "string", "example": "https://twitter.com/stripe" },
+                "verified": { "type": "boolean", "example": true }
+              }
+            }
+          },
+          "meta_data": {
+            "type": "object",
+            "properties": {
+              "title": { "type": "string", "example": "Stripe | Payment Processing Platform" },
+              "description": { "type": "string", "example": "Stripe is a suite of APIs powering online payments." },
+              "keywords": { "type": "array", "items": { "type": "string" } },
+              "favicon_url": { "type": "string", "example": "https://stripe.com/favicon.ico" }
+            }
+          },
+          "domain_trust_metrics": {
+            "type": "object",
+            "properties": {
+              "domain_authority": { "type": "integer", "example": 92 },
+              "spam_score": { "type": "integer", "example": 1 },
+              "trust_score": { "type": "integer", "example": 98 }
+            }
+          }
+        }
+      },
+      "EmployeeIntelligence": {
+        "type": "object",
+        "required": ["employee_schema", "verified_emails", "executive_lookups"],
+        "properties": {
+          "employee_schema": { "$ref": "#/components/schemas/EmployeeSchema" },
+          "verified_emails": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/VerifiedEmail" }
+          },
+          "executive_lookups": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ExecutiveProfile" }
+          }
+        }
+      },
+      "EmployeeSchema": {
+        "type": "object",
+        "properties": {
+          "total_headcount": { "type": "integer", "example": 8000 },
+          "primary_email_pattern": { "type": "string", "example": "{first_initial}{last}@stripe.com" },
+          "secondary_email_pattern": { "type": "string", "example": "{first}.{last}@stripe.com" },
+          "department_breakdown": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "count": { "type": "integer" },
+                "percentage": { "type": "number", "format": "float" }
+              }
+            }
+          }
+        }
+      },
+      "VerifiedEmail": {
+        "type": "object",
+        "required": ["email", "first_name", "last_name", "title", "verification_status"],
+        "properties": {
+          "email": { "type": "string", "format": "email", "example": "pcollison@stripe.com" },
+          "first_name": { "type": "string", "example": "Patrick" },
+          "last_name": { "type": "string", "example": "Collison" },
+          "title": { "type": "string", "example": "CEO & Co-Founder" },
+          "department": { "type": "string", "example": "Executive" },
+          "verification_status": { "type": "string", "enum": ["VERIFIED", "RISKY", "UNVERIFIED"], "example": "VERIFIED" },
+          "confidence_score": { "type": "integer", "example": 99 },
+          "verification_details": {
+            "type": "object",
+            "properties": {
+              "mx_records_valid": { "type": "boolean", "example": true },
+              "smtp_check": { "type": "boolean", "example": true },
+              "is_catch_all": { "type": "boolean", "example": false },
+              "is_disposable": { "type": "boolean", "example": false }
+            }
+          }
+        }
+      },
+      "ExecutiveProfile": {
+        "type": "object",
+        "properties": {
+          "person_id": { "type": "string", "example": "exec_001_pcollison" },
+          "full_name": { "type": "string", "example": "Patrick Collison" },
+          "job_title": { "type": "string", "example": "Co-Founder & CEO" },
+          "department": { "type": "string", "example": "Executive" },
+          "linkedin_profile_url": { "type": "string", "example": "https://www.linkedin.com/in/patrickcollison" },
+          "avatar_url": { "type": "string", "example": "https://images.domelu.io/avatars/exec_001.jpg" },
+          "verified_email": { "type": "string", "format": "email", "example": "pcollison@stripe.com" },
+          "location": { "type": "string", "example": "San Francisco, CA" }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "status": { "type": "string", "example": "error" },
+          "code": { "type": "integer", "example": 400 },
+          "message": { "type": "string", "example": "Invalid parameter 'domain'. Domain format must be valid (e.g., example.com)." }
+        }
+      }
+    }
+  }
+}
