@@ -1,6 +1,6 @@
 # Domelu: Email Domain Retrieval & Intelligence API 🚀
 
-[![RapidAPI](https://shields.io)](https://rapidapi.com)
+[![RapidAPI](https://rapidapi.com/adipostella/api/domelu1)
 [![License](https://shields.io)](LICENSE)
 [![Python](https://shields.io)](https://python.org)
 
